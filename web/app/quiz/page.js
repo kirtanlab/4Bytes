@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 
-const API_KEY = "AIzaSyBcf7A-IKYDBBQsF7ZXqXwBSRuFfu_cO_0";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 const LOCAL_STORAGE_KEY = "studyRoadmap";
 
@@ -49,12 +49,14 @@ export default function QuizPage() {
   const subtopic = searchParams.get("subtopic");
   const [quiz, setQuiz] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
-    if (subtopic) {
+    if (subtopic && !fetched) {
       fetchQuizQuestions(subtopic, setQuiz);
+      setFetched(true);
     }
-  }, [subtopic]);
+  }, [subtopic, fetched]);
 
   const handleAnswerChange = (questionIndex, selectedOption) => {
     setAnswers((prev) => ({ ...prev, [questionIndex]: selectedOption }));

@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Great_Vibes } from "next/font/google";
 
-const API_KEY = "AIzaSyBcf7A-IKYDBBQsF7ZXqXwBSRuFfu_cO_0";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 const LOCAL_STORAGE_KEY = "studyRoadmap";
 
