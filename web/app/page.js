@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Great_Vibes } from "next/font/google";
 
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
+const API_KEY = "AIzaSyBcf7A-IKYDBBQsF7ZXqXwBSRuFfu_cO_0";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 const LOCAL_STORAGE_KEY = "studyRoadmap";
 
@@ -73,7 +75,9 @@ const NoteUploader = ({ onNotesSubmit }) => {
   );
 };
 
-const StepProgress = ({ steps, onStepComplete, onReset }) => {
+const StepProgress = ({ steps, onReset }) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
       {steps.map((step, index) => (
@@ -82,10 +86,8 @@ const StepProgress = ({ steps, onStepComplete, onReset }) => {
           className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group 
             ${step.completed ? "is-active" : step.inProgress ? "is-inprogress" : ""}`}
         >
-          <button
-            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 
+          <div className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 
               ${step.completed ? "bg-emerald-500 text-emerald-50" : step.inProgress ? "bg-blue-500 text-white" : "bg-slate-300 text-slate-500"}`}
-            onClick={() => onStepComplete(index)}
           >
             {step.completed ? (
               <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="12" height="10">
@@ -99,10 +101,15 @@ const StepProgress = ({ steps, onStepComplete, onReset }) => {
             ) : (
               <span className="w-4 h-4 bg-gray-400 rounded-full"></span>
             )}
-          </button>
+          </div>
           <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-slate-200 shadow">
             <div className="font-bold text-slate-900">{step.title}</div>
             <div className="text-slate-500">{step.description}</div>
+            {step.inProgress && (
+              <button className="mt-2 px-4 py-2 bg-blue-600 text-white rounded" onClick={() => router.push(`/quiz?subtopic=${encodeURIComponent(step.title)}`)}>
+                Start Quiz
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -123,27 +130,12 @@ export default function Home() {
     }
   }, []);
 
-  const handleStepComplete = (index) => {
-    setSteps((prevSteps) => {
-      const newSteps = [...prevSteps];
-      if (!newSteps[index].completed && newSteps[index].inProgress) {
-        newSteps[index].completed = true;
-        newSteps[index].inProgress = false;
-        if (index + 1 < newSteps.length) {
-          newSteps[index + 1].inProgress = true;
-        }
-      }
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSteps));
-      return newSteps;
-    });
-  };
-
   return (
     <main className="my-12 mx-8 flex flex-col items-center">
       {view === "upload" ? (
         <NoteUploader onNotesSubmit={(notes) => fetchGeminiResponse(notes, setSteps, setView)} />
       ) : (
-        <StepProgress steps={steps} onStepComplete={handleStepComplete} onReset={() => { setView("upload"); setSteps([]); localStorage.removeItem(LOCAL_STORAGE_KEY); }} />
+        <StepProgress steps={steps} onReset={() => { setView("upload"); setSteps([]); localStorage.removeItem(LOCAL_STORAGE_KEY); }} />
       )}
     </main>
   );
